@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,7 +46,6 @@ button { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; margi
   </div>
 </div>
 
-<!-- Окно настроек -->
 <div id="settingsModal">
   <h3>Настройки</h3>
   <button onclick="connectBluetooth()">Подключить палочку</button>
@@ -65,6 +65,12 @@ button { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; margi
       <value name="RADIUS"><block type="math_number"><field name="NUM">10</field></block></value>
     </block>
     <block type="wand_cast_color"></block>
+    <block type="remove_fire"></block>
+    <block type="create_object">
+      <value name="SPRITE_URL"><block type="text"><field name="TEXT">url_к_спрайту.png</field></block></value>
+      <value name="X"><block type="math_number"><field name="NUM">0</field></block></value>
+      <value name="Y"><block type="math_number"><field name="NUM">0</field></block></value>
+    </block>
   </category>
   <category name="Палочка" colour="#ffde59">
     <block type="wand_led_color"></block>
@@ -84,8 +90,12 @@ button { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; margi
       <value name="SECONDS"><block type="math_number"><field name="NUM">1</field></block></value>
     </block>
     <block type="math_number"></block>
+    <block type="text"></block> </category>
+  <category name="Переменные" custom="VARIABLE">
+    <block type="set_price">
+      <value name="VALUE"><block type="math_number"><field name="NUM">100</field></block></value>
+    </block>
   </category>
-  <category name="Переменные" custom="VARIABLE"></category>
 </xml>
 
 <script>
@@ -96,14 +106,16 @@ const DARK_THEME = Blockly.Theme.defineTheme('dark', {
     'start_blocks': {'colourPrimary':'#ffb347','colourSecondary':'#e6993e','colourTertiary':'#cca64d'},
     'motion_blocks': {'colourPrimary':'#8ec5ff','colourSecondary':'#6ab0f3','colourTertiary':'#aad1ff'},
     'flow_blocks': {'colourPrimary':'#ffd28e','colourSecondary':'#e6b86f','colourTertiary':'#ffd699'},
-    'input_blocks': {'colourPrimary':'#8eff99','colourSecondary':'#6fdc77','colourTertiary':'#a4f3aa'}
+    'input_blocks': {'colourPrimary':'#8eff99','colourSecondary':'#6fdc77','colourTertiary':'#a4f3aa'},
+    'variable_blocks': {'colourPrimary':'#ffde59','colourSecondary':'#e6c84d','colourTertiary':'#ffd699'} // Добавлен стиль для переменных
   },
   'categoryStyles': {
     'logic_category': {'colour':'#ffd28e'},
     'loop_category': {'colour':'#ffb347'},
     'motion_category': {'colour':'#8ec5ff'},
     'sensor_category': {'colour':'#8eff99'},
-    'wand_category': {'colour':'#ffde59'}
+    'wand_category': {'colour':'#ffde59'},
+    'variable_category': {'colour':'#ffde59'} // Добавлен стиль для переменных
   },
   'componentStyles': {
     'workspaceBackgroundColour': '#2d2f33',
@@ -132,6 +144,38 @@ Blockly.defineBlocksWithJsonArray([
       {type:"field_dropdown", name:"COLOR", options:[["Синий","#8ec5ff"],["Зеленый","#8eff99"],["Красный","#ff8e8e"],["Random","random"]]}],
       previousStatement:null, nextStatement:null, style:"motion_blocks"
   },
+  // --- НОВЫЕ БЛОКИ ---
+  {
+      type: "remove_fire",
+      message0: "Удалить все объекты огня",
+      previousStatement: null,
+      nextStatement: null,
+      style: "motion_blocks"
+  },
+  {
+      type: "create_object",
+      message0: "Создать Объект из URL %1 в X:%2 Y:%3",
+      args0: [
+          { type: "input_value", name: "SPRITE_URL", check: "String" },
+          { type: "input_value", name: "X", check: "Number" },
+          { type: "input_value", name: "Y", check: "Number" }
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      style: "motion_blocks"
+  },
+  {
+      type: "set_price",
+      message0: "Сменить цену %1 на %2",
+      args0: [
+          { type: "field_variable", name: "VAR", variable: "цена" }, // Использует стандартную переменную
+          { type: "input_value", name: "VALUE", check: "Number" }
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      style: "variable_blocks"
+  },
+  // --------------------
   { type:"wand_led_color", message0:"Изменить цвет индикатора %1", args0:[{type:"field_colour", name:"COLOR", colour:"#ffde59"}], previousStatement:null, nextStatement:null, style:"motion_blocks" },
   { type:"wand_led_set", message0:"Светодиод палочки цвет %1 яркость %2", args0:[
       { type: "field_colour", name: "COLOR", colour: "#ffde59" },
@@ -148,7 +192,8 @@ Blockly.defineBlocksWithJsonArray([
   { type:"wand_moved_x", message0:"Палочка сдвинулась по X", output:"Boolean", style:"input_blocks" },
   { type:"wand_moved_y", message0:"Палочка сдвинулась по Y", output:"Boolean", style:"input_blocks" },
   { type:"wait_seconds", message0:"Подождать %1 сек", args0:[{type:"input_value",name:"SECONDS",check:"Number"}], previousStatement:null, nextStatement:null, style:"flow_blocks" },
-  { type:"math_number", message0:"%1", args0:[{type:"field_number",name:"NUM",value:0}], output:"Number", style:"input_blocks" }
+  { type:"math_number", message0:"%1", args0:[{type:"field_number",name:"NUM",value:0}], output:"Number", style:"input_blocks" },
+  { type: "text", message0: "%1", args0: [{ type: "field_input", name: "TEXT", text: "" }], output: "String", style: "input_blocks" } // Добавлен блок Text
 ]);
 
 /* ---------- JS Code Generator ---------- */
@@ -171,6 +216,38 @@ Blockly.JavaScript['wand_cast_color'] = block => {
   const color = block.getFieldValue('COLOR');
   return `let c='${color}'; if(c==='random'){c='#'+Math.floor(Math.random()*16777215).toString(16);} history.push({type:'circle',x:cursorX+canvas.width/2,y:cursorY+canvas.height/2,r:20,c:c});`;
 };
+
+// --- НОВЫЕ ГЕНЕРАТОРЫ КОДА ---
+Blockly.JavaScript['remove_fire'] = () => {
+    // Удаляет все нарисованные круги (огни)
+    return `history = history.filter(item => item.type !== 'circle');\n`;
+};
+
+Blockly.JavaScript['create_object'] = block => {
+    // Добавляет спрайт в историю. Потребуется обновление функции draw для отображения.
+    const url = Blockly.JavaScript.valueToCode(block, 'SPRITE_URL', Blockly.JavaScript.ORDER_NONE) || '""';
+    const x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_NONE) || 0;
+    const y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_NONE) || 0;
+    // Створення нового об'єкту Image у JS, який потім буде малюватися.
+    return `
+      (function() {
+          const img = new Image();
+          img.src = ${url};
+          img.onload = function() {
+              history.push({type:'sprite', img: img, x:(${x})+canvas.width/2, y:(${y})+canvas.height/2, w: 50, h: 50});
+          };
+      })();
+    `;
+};
+
+Blockly.JavaScript['set_price'] = block => {
+    // Генератор для встановлення значення змінної.
+    const variable = Blockly.JavaScript.nameDB_.getName(block.getFieldValue('VAR'), Blockly.VARIABLE_CATEGORY_NAME);
+    const value = Blockly.JavaScript.valueToCode(block, 'VALUE', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+    return `${variable} = ${value};\n`;
+};
+// ------------------------------
+
 Blockly.JavaScript['wand_led_color'] = b=>`sendLedColor('${b.getFieldValue('COLOR')}');`;
 Blockly.JavaScript['wand_led_set'] = b=>`sendLedColor('${b.getFieldValue('COLOR')}', ${b.getFieldValue('BRIGHT')});`;
 Blockly.JavaScript['wand_led_signal'] = b=>{
@@ -188,6 +265,10 @@ Blockly.JavaScript['wait_seconds'] = block => {
   return `await new Promise(r=>setTimeout(r,${sec}*1000));`;
 };
 Blockly.JavaScript['math_number'] = block => [Number(block.getFieldValue('NUM')),Blockly.JavaScript.ORDER_ATOMIC];
+Blockly.JavaScript['text'] = block => {
+  const text = block.getFieldValue('TEXT');
+  return [`'${text}'`, Blockly.JavaScript.ORDER_ATOMIC];
+}; // Генератор для блока Text
 
 /* ---------- Workspace ---------- */
 let workspace = Blockly.inject('blocklyDiv',{
@@ -199,7 +280,8 @@ let workspace = Blockly.inject('blocklyDiv',{
 
 /* ---------- Canvas & Particles ---------- */
 let canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
-let isRunning=false, cursorX=0, cursorY=0, history=[], wandState={tiltX:0, tiltY:0};
+// ВАЖНО: Добавляем переменные, чтобы блок "Сменить цену" работал
+let isRunning=false, cursorX=0, cursorY=0, history=[], wandState={tiltX:0, tiltY:0}, цена=0; 
 let drawInterval;
 
 class Particle{
@@ -215,7 +297,21 @@ for(let i=0;i<80;i++) particles.push(new Particle());
 function draw(){
   ctx.fillStyle='#0d0d0f';
   ctx.fillRect(0,0,canvas.width,canvas.height);
-  history.forEach(item=>{ ctx.beginPath(); ctx.arc(item.x,item.y,item.r,0,2*Math.PI); ctx.fillStyle=item.c; ctx.fill(); });
+  
+  history.forEach(item=>{ 
+    if(item.type === 'circle'){
+      ctx.beginPath(); 
+      ctx.arc(item.x,item.y,item.r,0,2*Math.PI); 
+      ctx.fillStyle=item.c; 
+      ctx.fill(); 
+    } else if (item.type === 'sprite' && item.img && item.img.complete) {
+      // Логіка для малювання спрайта
+      const drawX = item.x - item.w / 2;
+      const drawY = item.y - item.h / 2;
+      ctx.drawImage(item.img, drawX, drawY, item.w, item.h);
+    }
+  });
+
   particles.forEach(p=>{ p.update(); p.draw(); });
 }
 
@@ -239,7 +335,11 @@ async function runCode(){
   clearInterval(drawInterval);
   drawInterval=setInterval(draw,33);
   const code = Blockly.JavaScript.workspaceToCode(workspace);
-  try{ await (async()=>{await eval(code);})(); }catch(e){console.error(e);}
+  try{ await (async()=>{
+    // Ініціалізація змінних, якщо вони використовуються в коді Blockly
+    if(typeof цена === 'undefined') { let цена = 0; }
+    await eval(code);
+  })(); }catch(e){console.error(e);}
 }
 
 function stopCode(){ isRunning=false; clearInterval(drawInterval);}
