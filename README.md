@@ -6,7 +6,7 @@ en:Hi, my name is Artem. You haven't finalized this code yet, but you can. By th
 You'll find out what kind of pain you get when you can't find a program. I have the same problem, only with a specific program kano harry potter Coding Kit 
 
 
-
+Or did you do everything correctly and work? Send it to me via Google Drive.
 
 I used graphics here, and here's where you and the blockly are
 
@@ -30,6 +30,8 @@ bye ;)
 
 
 ru: Вы узнаете, каково это, когда не можешь найти нужную программу. У меня та же проблема, только с конкретной программой Kano Harry Potter Coding Kit.
+
+Или вы всё сделали правильно и работает? Отправьте мне через Google Drive.
 
 Я использовал графику, и вот где вы с блоком.
 
