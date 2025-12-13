@@ -6,8 +6,6 @@ en:Hi, my name is Artem. You haven't finalized this code yet, but you can. By th
 You'll find out what kind of pain you get when you can't find a program. I have the same problem, only with a specific program kano harry potter Coding Kit 
 
 
-Or did you do everything correctly and work? Send it to me via Google Drive    link on https://drive.google.com/drive/folders/1VaGs8uizWTRGUJTflrZ2m45XcPblkQLd?usp=drive_link
-
 I used graphics here, and here's where you and the blockly are
 
 I also used Bluetooth on the web to connect the devices together, specifically your computer and Harry Potter's wand. But be careful, you need Google Chrome or Microsoft Edge to connect them
