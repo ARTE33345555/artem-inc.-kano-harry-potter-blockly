@@ -132,6 +132,63 @@ document.addEventListener("DOMContentLoaded", function() {
     // ------------------------
     window.closeSettings = function(){
         document.getElementById('settingsModal').style.display = 'none';
+
+
+
+
+        // ------------------------
+// Языки
+// ------------------------
+const LANGS = {
+    "en": { ifBlock: "If background %1 and sprite %2" },
+    "en-GB": { ifBlock: "If background %1 and sprite %2" },
+    "fr": { ifBlock: "Si fond %1 et sprite %2" },
+    "ja": { ifBlock: "背景 %1 とスプライト %2 の場合" },
+    "uk": { ifBlock: "Якщо фон %1 і спрайт %2" },
+    "ru": { ifBlock: "Если фон %1 и спрайт %2" }
+};
+let currentLang = "ru"; // по умолчанию русский
+
+function defineWandBlock() {
+    Blockly.defineBlocksWithJsonArray([{
+        type: "if_luminus_mag",
+        message0: LANGS[currentLang].ifBlock,
+        args0: [
+            { type: "field_dropdown", name: "BACKGROUND", options: [["Синий","#1e1f33"],["Фиолетовый","#6A0DAD"],["Зелёный","#8eff99"]] },
+            { type: "field_input", name: "SPRITE_URL", text: "sprite.png" }
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        style: "logic_blocks"
+    }]);
+
+    Blockly.JavaScript['if_luminus_mag'] = function(block){
+        const bg = block.getFieldValue('BACKGROUND');
+        const sprite = block.getFieldValue('SPRITE_URL');
+        return `
+            canvas.style.background='${bg}';
+            (function(){
+                const img = new Image();
+                img.src='${sprite}';
+                img.onload = ()=>history.push({type:'sprite', img:img, x:magicCursor.x, y:magicCursor.y, w:50, h:50});
+            })();
+        `;
+    };
+}
+
+// Инициализация блока при загрузке
+defineWandBlock();
+
+// ------------------------
+// Смена языка
+// ------------------------
+window.changeLanguage = function(lang){
+    if(!LANGS[lang]) return;
+    currentLang = lang;
+    workspace.clear();        // чистим рабочую область
+    defineWandBlock();        // пересоздаём блоки на новом языке
+};
+
     };
 
 });
