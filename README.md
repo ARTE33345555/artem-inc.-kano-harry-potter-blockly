@@ -8,7 +8,8 @@ Microsoft Edge, Chrome, or Opera or Firefox required
 
 This project has been eating up all my time for me. If you can improve it a little, send it to me on GitHub online and I'll take a look and then make you a modified project. It was once my unfinished project on my website.
 
-<img width="115" height="115" alt="image" src="https://github.com/user-attachments/assets/e73d2401-2f85-4530-8328-2dfbbe65e4c9" />
+<img width="1081" height="646" alt=" bl p bj,hbuhijokg7k9yhugrmuyigfjhbmkyvhuj" src="https://github.com/user-attachments/assets/39f426b9-68e7-4675-9efc-20274f1d3f12" />
+
 
 
 
