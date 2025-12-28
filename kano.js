@@ -9,24 +9,24 @@ document.addEventListener("DOMContentLoaded", function() {
     canvas.height = canvas.parentElement.offsetHeight;
 
     // ------------------------
-    // Стан палички
+    // Состояние палочки
     // ------------------------
     const wandState = { tiltX: 0, tiltY: 0 };
 
     // ------------------------
-    // Історія дій
+    // История спрайтов
     // ------------------------
     const history = [];
 
     // ------------------------
-    // Огонёк-курсор
+    // Огнекурсор
     // ------------------------
     const magicCursor = { x: 0, y: 0, size: 25, img: null, visible: true };
     magicCursor.img = new Image();
     magicCursor.img.src = "fire_cursor.png";
 
     // ------------------------
-    // Відстеження мишки
+    // Следим за мышкой
     // ------------------------
     canvas.addEventListener("mousemove", (e) => {
         const rect = canvas.getBoundingClientRect();
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // ------------------------
-    // Використання палички
+    // Используем палочку, если нет мышки
     // ------------------------
     function updateMagicCursorFromWand() {
         magicCursor.x = canvas.width / 2 + wandState.tiltX * 10;
@@ -48,14 +48,14 @@ document.addEventListener("DOMContentLoaded", function() {
     function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Малюємо історію спрайтів
+        // Рисуем историю спрайтов
         for(const item of history){
             if(item.type === 'sprite'){
                 ctx.drawImage(item.img, item.x, item.y, item.w, item.h);
             }
         }
 
-        // Малюємо огонёк-курсор
+        // Рисуем огнекурсор
         if(magicCursor.visible && magicCursor.img){
             ctx.drawImage(
                 magicCursor.img,
@@ -81,19 +81,19 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // ------------------------
-    // Кастомні блоки
+    // Кастомный блок
     // ------------------------
     Blockly.defineBlocksWithJsonArray([
         {
             type: "if_luminus_mag",
-            message0: "Якщо Маги Люминус Фон %1 Спрайт %2",
+            message0: "Если фон %1 и спрайт %2",
             args0: [
-                { type: "field_dropdown", name: "BACKGROUND", options: [["Синій","#1e1f33"],["Фіолетовий","#6A0DAD"],["Зелений","#8eff99"]] },
+                { type: "field_dropdown", name: "BACKGROUND", options: [["Синий","#1e1f33"],["Фиолетовый","#6A0DAD"],["Зелёный","#8eff99"]] },
                 { type: "field_input", name: "SPRITE_URL", text: "sprite.png" }
             ],
             previousStatement: null,
             nextStatement: null,
-            style: "motion_blocks"
+            style: "logic_blocks"
         }
     ]);
 
@@ -123,12 +123,12 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     window.stopCode = function() {
-        history.length = 0; // очищаємо canvas
+        history.length = 0;
         ctx.clearRect(0,0,canvas.width,canvas.height);
     };
 
     // ------------------------
-    // Модалка налаштувань
+    // Модалка настроек
     // ------------------------
     window.closeSettings = function(){
         document.getElementById('settingsModal').style.display = 'none';
