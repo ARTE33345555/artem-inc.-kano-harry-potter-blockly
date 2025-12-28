@@ -1,114 +1,137 @@
-// ------------------------------------------------
-//   СТАН ПАЛОЧКИ
-// ------------------------------------------------
-const wandState = {
-  tiltX: 0,
-  tiltY: 0
-};
+document.addEventListener("DOMContentLoaded", function() {
 
-// ------------------------------------------------
-//   ІСТОРІЯ ДІЙ
-// ------------------------------------------------
-const history = [];
+    // ------------------------
+    // Canvas
+    // ------------------------
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.parentElement.offsetWidth;
+    canvas.height = canvas.parentElement.offsetHeight;
 
-// ------------------------------------------------
-//   ОГОНЁК-КУРСОР
-// ------------------------------------------------
-const magicCursor = {
-  x: 0,
-  y: 0,
-  size: 25,
-  img: null,
-  visible: true
-};
+    // ------------------------
+    // Стан палички
+    // ------------------------
+    const wandState = { tiltX: 0, tiltY: 0 };
 
-// Завантаження картинки огонька
-magicCursor.img = new Image();
-magicCursor.img.src = "fire_cursor.png";
+    // ------------------------
+    // Історія дій
+    // ------------------------
+    const history = [];
 
-// ------------------------------------------------
-//   СЛІЖЕННЯ ЗА МИШКОЮ
-// ------------------------------------------------
-document.addEventListener("mousemove", (e) => {
-  magicCursor.x = e.clientX;
-  magicCursor.y = e.clientY;
-});
+    // ------------------------
+    // Огонёк-курсор
+    // ------------------------
+    const magicCursor = { x: 0, y: 0, size: 25, img: null, visible: true };
+    magicCursor.img = new Image();
+    magicCursor.img.src = "fire_cursor.png";
 
-// ------------------------------------------------
-//   ЯКЩО МИШІ НЕМА — ВИКОРИСТОВУЄТЬСЯ ПАЛОЧКА
-// ------------------------------------------------
-function updateMagicCursorFromWand() {
-  magicCursor.x = canvas.width / 2 + wandState.tiltX * 10;
-  magicCursor.y = canvas.height / 2 + wandState.tiltY * 10;
-}
+    // ------------------------
+    // Відстеження мишки
+    // ------------------------
+    canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        magicCursor.x = e.clientX - rect.left;
+        magicCursor.y = e.clientY - rect.top;
+    });
 
-// ------------------------------------------------
-//   РЕНДЕР CANVAS
-// ------------------------------------------------
-function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Малюємо елементи історії
-  for (const item of history) {
-    if (item.type === "sprite") {
-      ctx.drawImage(item.img, item.x, item.y, item.w, item.h);
+    // ------------------------
+    // Використання палички
+    // ------------------------
+    function updateMagicCursorFromWand() {
+        magicCursor.x = canvas.width / 2 + wandState.tiltX * 10;
+        magicCursor.y = canvas.height / 2 + wandState.tiltY * 10;
     }
-  }
 
-  // Малюємо огонёк-курсор
-  if (magicCursor.visible && magicCursor.img) {
-    ctx.drawImage(
-      magicCursor.img,
-      magicCursor.x - magicCursor.size / 2,
-      magicCursor.y - magicCursor.size / 2,
-      magicCursor.size,
-      magicCursor.size
-    );
-  }
+    // ------------------------
+    // Render
+    // ------------------------
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  requestAnimationFrame(render);
-}
-render();
+        // Малюємо історію спрайтів
+        for(const item of history){
+            if(item.type === 'sprite'){
+                ctx.drawImage(item.img, item.x, item.y, item.w, item.h);
+            }
+        }
 
-// ------------------------------------------------
-//   НОВИЙ BLOCKLY БЛОК (твій)
-// ------------------------------------------------
-Blockly.defineBlocksWithJsonArray([
-  {
-    type: "if_luminus_mag",
-    message0: "Якщо Маги Люминус Фон %1 Спрайт %2",
-    args0: [
-      { type: "field_dropdown", name: "BACKGROUND", options: [["Синій","#1e1f33"],["Фіолетовий","#6A0DAD"],["Зелений","#8eff99"]] },
-      { type: "field_input", name: "SPRITE_URL", text: "sprite.png" }
-    ],
-    previousStatement: null,
-    nextStatement: null,
-    style: "motion_blocks"
-  }
-]);
+        // Малюємо огонёк-курсор
+        if(magicCursor.visible && magicCursor.img){
+            ctx.drawImage(
+                magicCursor.img,
+                magicCursor.x - magicCursor.size/2,
+                magicCursor.y - magicCursor.size/2,
+                magicCursor.size,
+                magicCursor.size
+            );
+        }
 
-// ------------------------------------------------
-//   JAVASCRIPT ГЕНЕРАТОР БЛОКА (твій + мій)
-// ------------------------------------------------
-Blockly.JavaScript['if_luminus_mag'] = function(block) {
-  const bg = block.getFieldValue('BACKGROUND');
-  const sprite = block.getFieldValue('SPRITE_URL');
-  return `
-    // Зміна фону
-    canvas.style.background='${bg}';
+        requestAnimationFrame(render);
+    }
+    render();
 
-    // Додавання спрайта
-    (function(){
-      const img = new Image();
-      img.src = '${sprite}';
-      img.onload = ()=>history.push({
-        type:'sprite',
-        img:img,
-        x: magicCursor.x,
-        y: magicCursor.y,
-        w: 50,
-        h: 50
-      });
-    })();
-  `;
-};
+    // ------------------------
+    // Blockly
+    // ------------------------
+    const workspace = Blockly.inject('blocklyDiv', {
+        toolbox: document.getElementById('toolbox'),
+        scrollbars: true,
+        trashcan: true,
+        renderer: 'zelos'
+    });
+
+    // ------------------------
+    // Кастомні блоки
+    // ------------------------
+    Blockly.defineBlocksWithJsonArray([
+        {
+            type: "if_luminus_mag",
+            message0: "Якщо Маги Люминус Фон %1 Спрайт %2",
+            args0: [
+                { type: "field_dropdown", name: "BACKGROUND", options: [["Синій","#1e1f33"],["Фіолетовий","#6A0DAD"],["Зелений","#8eff99"]] },
+                { type: "field_input", name: "SPRITE_URL", text: "sprite.png" }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            style: "motion_blocks"
+        }
+    ]);
+
+    Blockly.JavaScript['if_luminus_mag'] = function(block){
+        const bg = block.getFieldValue('BACKGROUND');
+        const sprite = block.getFieldValue('SPRITE_URL');
+        return `
+            canvas.style.background='${bg}';
+            (function(){
+                const img = new Image();
+                img.src='${sprite}';
+                img.onload = ()=>history.push({type:'sprite', img:img, x:magicCursor.x, y:magicCursor.y, w:50, h:50});
+            })();
+        `;
+    };
+
+    // ------------------------
+    // Run / Stop код
+    // ------------------------
+    window.runCode = function() {
+        const code = Blockly.JavaScript.workspaceToCode(workspace);
+        try {
+            eval(code);
+        } catch(e) {
+            console.error(e);
+        }
+    };
+
+    window.stopCode = function() {
+        history.length = 0; // очищаємо canvas
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+    };
+
+    // ------------------------
+    // Модалка налаштувань
+    // ------------------------
+    window.closeSettings = function(){
+        document.getElementById('settingsModal').style.display = 'none';
+    };
+
+});
