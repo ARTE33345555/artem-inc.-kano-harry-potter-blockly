@@ -16,4 +16,4 @@ This project has been eating up all my time for me. If you can improve it a litt
 By the way, I plan to make this program available in all the languages ​​of the world.
 
 
-There's a version for Chromebook, a browser on a   Mac OS, and Windows, and also for Android or iOS phones.
+There's a version for Chromebook, a browser on a   Mac OS, and Windows, and also for Android or iOS phones or tablet.
