@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kano Wand Coding Kit</title>
+<title>Kano Wand Coding Kit - Mix Engine</title>
 <script src="https://unpkg.com/blockly/blockly.min.js"></script>
 <style>
 body { margin:0; display:flex; height:100vh; font-family:Arial, sans-serif; background:#1e1f22; color:white; }
@@ -63,7 +63,6 @@ button { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; margi
       <value name="RADIUS"><block type="math_number"><field name="NUM">10</field></block></value>
     </block>
     <block type="wand_cast_color"></block>
-    <block type="remove_fire"></block>
     <block type="create_object">
       <value name="SPRITE_URL"><block type="text"><field name="TEXT">url_к_спрайту.png</field></block></value>
       <value name="X"><block type="math_number"><field name="NUM">0</field></block></value>
@@ -71,7 +70,6 @@ button { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; margi
     </block>
     <block type="if_luminus_mag"></block>
     <block type="luminus_effect"></block>
-    <!-- НОВІ БЛОКИ ДЛЯ СЛІДУ -->
     <block type="set_trail_type"></block>
     <block type="set_trail_color"></block>
     <block type="set_trail_size"></block>
@@ -87,7 +85,6 @@ button { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; margi
     <block type="wand_moved_x"></block>
     <block type="wand_moved_y"></block>
     <block type="wand_led_signal"></block>
-    <!-- НОВІ БЛОКИ ПАЛОЧКИ -->
     <block type="wand_get_x"></block>
     <block type="wand_get_y"></block>
     <block type="use_wand_position"></block>
@@ -116,6 +113,7 @@ let cursorY = 0;
 let цена = 0;
 let drawInterval;
 let wandConnected = false;
+let commands = [];
 let history = [];
 
 const wandState = {
@@ -128,13 +126,13 @@ let bluetoothDevice, bluetoothServer, ledCharacteristic;
 
 /* ---------- Налаштування сліду ---------- */
 const trailSettings = {
-  type: 'fire', // fire, sparkles, rainbow, snow, magic
-  color: null, // null = авто колір для типу
-  size: 1.0, // множник розміру
+  type: 'sparkles',
+  color: null,
+  size: 1.0,
   enabled: true,
   particlesCount: 30,
   followSpeed: 0.15,
-  trailLength: 100 // довжина сліду в кадрах
+  trailLength: 100
 };
 
 /* ---------- Theme ---------- */
@@ -183,13 +181,6 @@ Blockly.defineBlocksWithJsonArray([
       previousStatement:null, nextStatement:null, style:"motion_blocks"
   },
   {
-      type: "remove_fire",
-      message0: "Удалить все объекты огня",
-      previousStatement: null,
-      nextStatement: null,
-      style: "motion_blocks"
-  },
-  {
       type: "create_object",
       message0: "Создать Объект из URL %1 в X:%2 Y:%3",
       args0: [
@@ -231,7 +222,6 @@ Blockly.defineBlocksWithJsonArray([
   { type:"math_number", message0:"%1", args0:[{type:"field_number",name:"NUM",value:0}], output:"Number", style:"input_blocks" },
   { type: "text", message0: "%1", args0: [{ type: "field_input", name: "TEXT", text: "" }], output: "String", style: "input_blocks" },
   
-  /* ---------- НОВЫЕ БЛОКИ ---------- */
   {
     type: "if_luminus_mag",
     message0: "Если %1 то Маги Люминус %2 фон %3 спрайт %4",
@@ -261,7 +251,7 @@ Blockly.defineBlocksWithJsonArray([
           ["Синий", "#1e1f33"],
           ["Фиолетовый", "#6A0DAD"],
           ["Зеленый", "#8eff99"],
-          ["Огненный", "#ff6b6b"]
+          ["Магический", "#9d5aff"]
         ]
       },
       {
@@ -298,7 +288,6 @@ Blockly.defineBlocksWithJsonArray([
     colour: 210
   },
   
-  /* ---------- НОВІ БЛОКИ ДЛЯ СЛІДУ ---------- */
   {
     type: "set_trail_type",
     message0: "Установить тип следа: %1",
@@ -307,7 +296,6 @@ Blockly.defineBlocksWithJsonArray([
         type: "field_dropdown",
         name: "TYPE",
         options: [
-          ["огонь", "fire"],
           ["искры", "sparkles"],
           ["радуга", "rainbow"],
           ["снег", "snow"],
@@ -403,9 +391,6 @@ Blockly.JavaScript['wand_cast_color'] = block => {
   const color = block.getFieldValue('COLOR');
   return `let c='${color}'; if(c==='random'){c='#'+Math.floor(Math.random()*16777215).toString(16);} history.push({type:'circle',x:cursorX+canvas.width/2,y:cursorY+canvas.height/2,r:20,c:c});`;
 };
-Blockly.JavaScript['remove_fire'] = () => {
-  return `history = history.filter(item => item.type !== 'circle');\n`;
-};
 Blockly.JavaScript['create_object'] = block => {
   const url = Blockly.JavaScript.valueToCode(block, 'SPRITE_URL', Blockly.JavaScript.ORDER_NONE) || '""';
   const x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_NONE) || 0;
@@ -447,7 +432,6 @@ Blockly.JavaScript['text'] = block => {
   return [`'${text}'`, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-/* ---------- НОВЫЕ ГЕНЕРАТОРЫ КОДА ---------- */
 Blockly.JavaScript['if_luminus_mag'] = function(block) {
   const condition = block.getFieldValue('CONDITION');
   const magicType = block.getFieldValue('MAGIC_TYPE');
@@ -469,10 +453,7 @@ Blockly.JavaScript['if_luminus_mag'] = function(block) {
   
   return `
     if (${conditionCode}) {
-      // Изменение фона
       document.getElementById('canvasBox').style.backgroundColor = '${bg}';
-      
-      // Добавление спрайта
       (function(){
         const img = new Image();
         img.src = '${sprite}';
@@ -487,9 +468,6 @@ Blockly.JavaScript['if_luminus_mag'] = function(block) {
             magicType: '${magicType}'
           });
         };
-        img.onerror = function() {
-          console.log('Не удалось загрузить спрайт');
-        };
       })();
     }
   `;
@@ -497,8 +475,6 @@ Blockly.JavaScript['if_luminus_mag'] = function(block) {
 
 Blockly.JavaScript['luminus_effect'] = function(block) {
   const effect = block.getFieldValue('EFFECT');
-  const duration = Blockly.JavaScript.valueToCode(block, 'DURATION', Blockly.JavaScript.ORDER_ATOMIC) || '1';
-  
   return `
     if ('${effect}' === 'FLASH') {
       const original = document.getElementById('canvasBox').style.backgroundColor;
@@ -510,7 +486,6 @@ Blockly.JavaScript['luminus_effect'] = function(block) {
   `;
 };
 
-/* ---------- ГЕНЕРАТОРИ ДЛЯ НОВИХ БЛОКІВ ---------- */
 Blockly.JavaScript['set_trail_type'] = function(block) {
   const type = block.getFieldValue('TYPE');
   if (type === 'none') {
@@ -580,21 +555,12 @@ class TrailParticle {
     }
     
     switch(type) {
-      case 'fire':
-        const fireColors = [
-          [255, 100, 0],   // оранжевый
-          [255, 50, 0],    // красный
-          [255, 150, 0],   // желтый
-          [255, 200, 100]  // светло-желтый
-        ];
-        return fireColors[Math.floor(Math.random() * fireColors.length)];
-        
       case 'sparkles':
         const sparkleColors = [
-          [255, 255, 200], // бело-желтый
-          [200, 255, 255], // голубой
-          [255, 200, 255], // розовый
-          [200, 255, 200]  // светло-зеленый
+          [255, 255, 200],
+          [200, 255, 255],
+          [255, 200, 255],
+          [200, 255, 200]
         ];
         return sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
         
@@ -603,19 +569,19 @@ class TrailParticle {
         return this.hslToRgb(hue % (Math.PI * 2), 1, 0.5);
         
       case 'snow':
-        return [255, 255, 255]; // белый
+        return [255, 255, 255];
         
       case 'magic':
         const magicColors = [
-          [138, 197, 255], // синий
-          [142, 255, 153], // зеленый
-          [255, 142, 142], // красный
-          [255, 222, 89]   // желтый
+          [138, 197, 255],
+          [142, 255, 153],
+          [255, 142, 142],
+          [255, 222, 89]
         ];
         return magicColors[Math.floor(Math.random() * magicColors.length)];
         
       default:
-        return [255, 100, 0];
+        return [200, 255, 200];
     }
   }
 
@@ -625,7 +591,7 @@ class TrailParticle {
       parseInt(result[1], 16),
       parseInt(result[2], 16),
       parseInt(result[3], 16)
-    ] : [255, 100, 0];
+    ] : [200, 255, 200];
   }
 
   hslToRgb(h, s, l) {
@@ -655,14 +621,7 @@ class TrailParticle {
   }
 
   update(targetX, targetY) {
-    // Движение в зависимости от типа
     switch(trailSettings.type) {
-      case 'fire':
-        this.x += Math.sin(this.angle) * this.speed;
-        this.y -= this.speed * 2; // Огонь поднимается вверх
-        this.angle += (Math.random() - 0.5) * 0.2;
-        break;
-        
       case 'sparkles':
         this.x += Math.cos(this.angle) * this.speed;
         this.y += Math.sin(this.angle) * this.speed;
@@ -706,10 +665,8 @@ class TrailParticle {
     
     ctx.save();
     
-    // Разные стили для разных типов
     switch(trailSettings.type) {
       case 'sparkles':
-        // Блестящие звездочки
         ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
         ctx.shadowBlur = 10;
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
@@ -727,13 +684,11 @@ class TrailParticle {
         break;
         
       case 'snow':
-        // Снежинки
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
         ctx.fill();
         
-        // Крестик для снежинки
         ctx.strokeStyle = `rgba(200, 230, 255, ${alpha * 0.7})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -745,21 +700,14 @@ class TrailParticle {
         break;
         
       default:
-        // Обычные круглые частицы
         const gradient = ctx.createRadialGradient(
           this.x, this.y, 0,
           this.x, this.y, size
         );
         
-        if (trailSettings.type === 'fire') {
-          gradient.addColorStop(0, `rgba(255, 255, 200, ${alpha})`);
-          gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${alpha * 0.7})`);
-          gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
-        } else {
-          gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha})`);
-          gradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`);
-          gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
-        }
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha})`);
+        gradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
         
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -771,13 +719,11 @@ class TrailParticle {
   }
 }
 
-// Массив частиц следа
 let trailParticles = [];
 let lastTrailTime = 0;
-const trailInterval = 50; // мс между созданием частиц
-let useWandPosition = false; // использовать ли позицию палочки
+const trailInterval = 50;
+let useWandPosition = false;
 
-/* ---------- ФУНКЦИИ ДЛЯ РОБОТИ ЗІ СЛІДОМ ---------- */
 function clearAllTrails() {
   trailParticles = [];
 }
@@ -787,7 +733,6 @@ function updateTrail(targetX, targetY) {
   
   const now = Date.now();
   
-  // Создаем новые частицы
   if (now - lastTrailTime > trailInterval) {
     for (let i = 0; i < 3; i++) {
       const offsetX = (Math.random() - 0.5) * 20;
@@ -797,13 +742,11 @@ function updateTrail(targetX, targetY) {
     lastTrailTime = now;
   }
   
-  // Обновляем существующие частицы
   trailParticles = trailParticles.filter(particle => {
     particle.update(targetX, targetY);
     return particle.life > 0 && particle.size > 0.5;
   });
   
-  // Ограничиваем количество частиц
   if (trailParticles.length > 500) {
     trailParticles = trailParticles.slice(-500);
   }
@@ -815,24 +758,19 @@ function drawTrail() {
   });
 }
 
-// Позиция для следа (мышь или палочка)
 let trailTargetX = canvas.width / 2;
 let trailTargetY = canvas.height / 2;
 
-// Следим за мышкой
 canvas.addEventListener('mousemove', (e) => {
   const rect = canvas.getBoundingClientRect();
   trailTargetX = e.clientX - rect.left;
   trailTargetY = e.clientY - rect.top;
   
-  // Также обновляем состояние палочки
   wandState.tiltX = Math.round((trailTargetX / canvas.width) * 200 - 100);
   wandState.tiltY = Math.round((trailTargetY / canvas.height) * 200 - 100);
 });
 
-// Когда мышь покидает canvas
 canvas.addEventListener('mouseleave', () => {
-  // Возвращаем в центр
   trailTargetX = canvas.width / 2;
   trailTargetY = canvas.height / 2;
   wandState.tiltX = 0;
@@ -840,21 +778,16 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 function draw() {
-  // Очищаем canvas
   ctx.fillStyle = '#0d0d0f';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  // Если использовать позицию палочки, обновляем цель
   if (useWandPosition && wandConnected) {
-    // Конвертируем tiltX/tiltY в координаты canvas
     trailTargetX = canvas.width / 2 + wandState.tiltX * (canvas.width / 200);
     trailTargetY = canvas.height / 2 + wandState.tiltY * (canvas.height / 200);
   }
   
-  // Обновляем след
   updateTrail(trailTargetX, trailTargetY);
   
-  // Рисуем историю (круги и спрайты)
   history.forEach(item => {
     if (item.type === 'circle') {
       ctx.beginPath();
@@ -868,7 +801,6 @@ function draw() {
     }
   });
   
-  // Рисуем след
   drawTrail();
 }
 
@@ -877,11 +809,9 @@ function resizeCanvas() {
   canvas.width = box.clientWidth - 8;
   canvas.height = box.clientHeight - 8;
   
-  // Сброс позиции
   trailTargetX = canvas.width / 2;
   trailTargetY = canvas.height / 2;
   
-  // Очищаем след при ресайзе
   clearAllTrails();
   
   draw();
@@ -914,7 +844,6 @@ async function runCode() {
       if (typeof цена === 'undefined') {
         let цена = 0;
       }
-      // Экспортируем глобальные переменные для блоков
       window.trailSettings = trailSettings;
       window.clearAllTrails = clearAllTrails;
       window.wandState = wandState;
@@ -932,7 +861,6 @@ function stopCode() {
   clearInterval(drawInterval);
 }
 
-/* ---------- Settings Functions ---------- */
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 settingsBtn.addEventListener('click', () => settingsModal.style.display = 'block');
@@ -954,7 +882,7 @@ async function connectBluetooth() {
     bluetoothServer = await bluetoothDevice.gatt.connect();
     console.log('Подключено к', bluetoothDevice.name);
     wandConnected = true;
-    useWandPosition = true; // Автоматически использовать позицию палочки при подключении
+    useWandPosition = true;
     alert('Устройство подключено: ' + bluetoothDevice.name);
     
   } catch (e) {
@@ -987,16 +915,11 @@ function sendLedSignal(color) {
   sendLedColor(c);
 }
 
-/* ---------- Инициализация при загрузке ---------- */
 window.addEventListener('load', () => {
   console.log('Kano Wand Coding Kit загружен!');
-  // Запускаем анимацию
   drawInterval = setInterval(draw, 33);
 });
-</script src="kano.js"></script>
+</script>
 
 </body>
 </html>
-
-   
-
